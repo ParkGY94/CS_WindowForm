@@ -8,78 +8,95 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace queue
+namespace linked_list
 {
+    
     public partial class Form1 : Form
     {
-        Myqueue a = new Myqueue();
+        public static int N = 1;
+        public static Node head = new Node();
+        public static Node tail = new Node();
         public Form1()
         {
+            head.next = tail;
+            head.prev = head;
+            tail.next = tail;
+            tail.prev = head;
             InitializeComponent();
-            Output.AppendText (a.Display());
+            
         }
 
-        private void BTN_Push_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            a.push(Input.Text);
-            Output.AppendText(a.Display());
+            head.Insert(Convert.ToInt32(IndexNum.Text), Input.Text);
+            Output.AppendText(head.Display());
         }
 
-        private void BTN_Pop_Click(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
-            a.pop();
-            Output.AppendText(a.Display());
+            head.Remove(Convert.ToInt32(IndexNum.Text));
+            Output.AppendText(head.Display());
         }
     }
-
-    public class Myqueue
+    public class Node
     {
-        public Myqueue() { arr = new string[] { "0", "0", "0", "0", "0" }; stack = 0; }
-        public string[] arr;
-        public int stack;
+        public object data;
+        public Node next;
+        public Node prev;
 
-        public void push(String Input)
+        public void Insert(int index, object input)
         {
-            if (arr[0] == "0") { arr[0] = Input; }
-            else if (arr[1] == "0") { arr[1] = Input; }
-            else if (arr[2] == "0") { arr[2] = Input; }
-            else if (arr[3] == "0") { arr[3] = Input; }
-            else if (arr[4] == "0") { arr[4] = Input; }
-            else
+            if (index <= Form1.N && index > 0)
             {
-                MessageBox.Show("배열이 가득 찼습니다.");
-            }
-            stack = 0;
-                for (int i = 0; i < arr.Length; i++) { if (arr[i] != "0") stack++; }
-        }
-        public void pop()
-        {
-            if (stack <= 0)
-            {
-                MessageBox.Show("삭제할 숫자가 없습니다.");
-                stack = 0;
-            }
-            else
-            {
-                if (arr[0] != "0") {
-                    for (int i = 0; i < 4; i++) { arr[i] = arr[i + 1];
-                    }
-                    arr[4] = "0";
+                Node node = new Node();
+                Node cur = Form1.head;
+                for (int i = 0; i < index; i++)
+                {
+                    cur = cur.next;
                 }
-                else { MessageBox.Show("삭제할 숫자가 없습니다."); }
-                stack = 0;
-                for (int i = 0; i < 5; i++) { if (arr[i] != "0") stack++; }
+                node.data = input;
+                node.next = cur;
+                cur.prev.next = node;
+                node.prev = cur.prev;
+                cur.prev = node;
+                Form1.N++;
+            }
+            else
+            {
+                MessageBox.Show("인덱스 값이 잘 못되었습니다. 리스트 수에 맞는 값을 입력해주세요");
+            }
+        }
+        public void Remove(int index)
+        {
+            if (index < Form1.N && index > 0)
+            {
+                Node delete = Form1.head;
+                for (int i = 0; i < index; i++)
+                {
+                    delete = delete.next;
+                }
+                delete.next.prev = delete.prev;
+                delete.prev.next = delete.next;
+                Form1.N--;
+            }
+            else
+            {
+                MessageBox.Show("인덱스 값이 잘 못되었습니다. 리스트 수에 맞는 값을 입력해주세요");
             }
         }
         public string Display()
         {
-            string output = "현재의 배열은 ";
-            for (int i = 0; i < 4; i++)
+            string output = "현재 리스트는 ";
+            Node cur = Form1.head.next;
+            for (int i = 0; i < Form1.N-1; i++)
             {
-                output = output + arr[i] + ", ";
+                output = output + (cur.data).ToString() + ", ";
+                cur = cur.next;
             }
-            output = output + arr[4] + " 입니다. \r\n";
+            output = output + " 입니다. \r\n";
             return output;
         }
+
     }
+
 }
