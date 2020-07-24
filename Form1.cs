@@ -7,739 +7,288 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Calculator_Class;
+using System.Threading;
+using StopWatch_Thread__Class;
 
-namespace Calculator_Ver5
+namespace StopWatch_Thread_
 {
     public partial class Form1 : Form
     {
-        Calculator a = new Calculator();
+        StopWatch a = new StopWatch();
+
+        delegate void Ct_involk(Control ctr, string text);
+        public void setText_Control(Control ctr, string txtValue)
+        {
+            if (InvokeRequired)
+            {
+                Ct_involk CI = new Ct_involk(setText_Control);
+                ctr.Invoke(CI, ctr, txtValue);
+            }
+            else
+            {
+                ctr.Text = txtValue;
+            }
+        }
+        public void start()
+        {
+            while (a.isStop == false)
+            {
+                Thread.Sleep(10);
+                if (a.GetHours() > 0)
+                {
+                    setText_Control(Lab_hour, a.GetHours().ToString("00"));
+                    setText_Control(label4, ":");
+                }
+                setText_Control(Lab_minute, a.GetMinutes().ToString("00"));
+                setText_Control(Lab_sec, a.GetSeconds().ToString("00"));
+                setText_Control(Lab_milisec, a.GetMiliseconds().ToString("00"));
+                a.IncreaseMilisec();
+                if (a.Record_Count > 0)
+                {
+                    if (a.GetHours2() > 0)
+                    {
+                        setText_Control(Lab_hour2, a.GetHours2().ToString("00"));
+                        setText_Control(label1, ":");
+                    };
+                    setText_Control(Lab_minute2, a.GetMinutes2().ToString("00"));
+                    setText_Control(label2, ":");
+                    setText_Control(Lab_sec2, a.GetSeconds2().ToString("00"));
+                    setText_Control(label3, ".");
+                    setText_Control(Lab_milisec2, a.GetMiliseconds2().ToString("00"));
+                }
+                a.IncreaseMilisec2();
+            }
+        }
         public Form1()
         {
             InitializeComponent();
         }
-        private void BTN_Calc_Click(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            if (a.isresult == true)
-            {
-                a.recentNum = a.savedNum;
-                if(a.isbinary == true)
-                {
-                    a.Input = Convert.ToString(Convert.ToInt32(a.recentNum), 2);
-                }
-                if (a.isdecimal == true)
-                {
-                    a.Input = Convert.ToString(a.recentNum);
-                }
-                if (a.ishexadecimal == true)
-                {
-                    a.Input = string.Format("{0:X}", (Convert.ToInt32(a.recentNum))); ;
-                }
-                Output.Text = a.Input;
-                a.isresult = false;
-            }
-            if (a.Iscalc == true)
-            {
-                return;
-            }
-            Button b = (Button)sender;
-            switch (b.Text)
-            {
-                case "+":
-                    a.Plus();
-                    store.Text = "";
-                    foreach (string a in a.list)
-                    {
-                        store.AppendText(a);
-                    }
-                    break;
-                case "-":
-                    a.Minus();
-                    store.Text = "";
-                    foreach (string a in a.list)
-                    {
-                        store.AppendText(a);
-                    }
-                    break;
-                case "X":
-                    a.Multi();
-                    store.Text = "";
-                    foreach (string a in a.list)
-                    {
-                        store.AppendText(a);
-                    }
-                    break;
-                case "÷":
-                    a.Div();
-                    store.Text = "";
-                    foreach (string a in a.list)
-                    {
-                        store.AppendText(a);
-                    }
-                    break;
-            }
-            a.Iscalc = true;
-            //Output.Text = Convert.ToString(recentNum);
-            a.count++;
-            a.sqr_ = 0;
-            a.pointNum = 0;
-            a.isParen_C = false;
         }
-        private void BTN_Num_Click(object sender, EventArgs e)
+        private void BTN_Start_Click(object sender, EventArgs e)
         {
-            if(a.isParen_C == true)
-            {
-                return;
-            }
-            if (a.isresult == true)
-            {
-                a.Clear();
-                store.Text = "";
-                Output.Text = "0";
-            }
-            if (Output.Text == "0" || a.Iscalc == true)
-            {
-                a.Input = "";
-                a.Iscalc = false;
-            }
-            if (a.sqr_ > 0)
-            {
-                a.recentNum = 0;
-                a.Input = "";
-                a.sqr_ = 0;
-            }
-            /*if (Ispercent == true)
-            {
-                recentNum = 0;
-                Input = "";
-                Ispercent = false;
-                list.RemoveAt(list.Count - 1);
-            }*/
-            Button b = (Button)sender;
-            a.Input = a.Input + b.Text;
-            if (a.Input == "") { a.Input = "0"; }
-            Output.Text = a.Input;
-            if (a.isdecimal == true)
-            {
-                a.recentNum = Convert.ToDouble(a.Input);
-            }
-            if (a.isbinary == true)
-            {
-                a.recentNum = Convert.ToDouble(Convert.ToInt32(a.Input,2));
-            }
-            if (a.ishexadecimal == true)
-            {
-                a.recentNum = Convert.ToDouble(Convert.ToInt32(a.Input, 16));
-            }
+            BTN_Stop.Enabled = true;
+            BTN_Reset.Enabled = true;
+            a.Start_Click();
+            Thread t1 = new Thread(start);
+            t1.Start();
+            BTN_Reset.Text = "구간기록";
         }
-        private void BTN_Sign_Click(object sender, EventArgs e)
+        private void BTN_Pause_Click(object sender, EventArgs e)
         {
-            if (a.Input == "0")
+            a.Stop_Click();
+            BTN_Reset.Text = "초기화";
+        }
+        private void BTN_Reset_Click(object sender, EventArgs e)
+        {
+            if (BTN_Reset.Text == "초기화")
             {
-                return;
+                Lab_hour.Text = "";
+                label4.Text = "";
+                Lab_hour2.Text = "";
+                label1.Text = "";
+                Lab_minute2.Text = "";
+                label2.Text = "";
+                Lab_sec2.Text = "";
+                label3.Text = "";
+                Lab_milisec2.Text = "";
+                Lab_Section.Text = "";
+                Lab_SectionRecord.Text = "";
+                Lab_Time.Text = "";
+                Text_Section.Text = "";
+                Text_Section_Score.Text = "";
+                Text_Time.Text = "";
+                a.Reset_Click();
+                BTN_Reset.Enabled = false;
+                BTN_Stop.Enabled = false;
+                if (a.GetHours() > 0)
+                {
+                    setText_Control(Lab_hour, a.GetHours().ToString("00"));
+                    setText_Control(label4, ":");
+                }
+                setText_Control(Lab_minute, a.GetMinutes().ToString("00"));
+                setText_Control(Lab_sec, a.GetSeconds().ToString("00"));
+                setText_Control(Lab_milisec, a.GetMiliseconds().ToString("00"));
             }
             else
             {
-                a.recentNum = -a.recentNum;
-                a.Input = Convert.ToString(a.recentNum);
-            }
-            Output.Text = a.Input;
-        }
-        private void BTN_Result_Click_1(object sender, EventArgs e)
-        {
-            if(a.isresult == true)
-            {
-                return;
-            }
-            if (a.Paren_C != a.Paren_O)
-            {
-                MessageBox.Show("수식이 정확한지 확인해주세요");
-                return;
-            }
-            if (a.list.Last() == " + " || a.list.Last() == " - " || a.list.Last() == " X " || a.list.Last() == " ÷ ")
-            {
-                if (a.Input == "")
+                Lab_Section.Text = "구간";
+                Lab_SectionRecord.Text = "구간기록";
+                Lab_Time.Text = "전체시간";
+                Text_Section.AppendText(a.RecordCount().ToString("00") + "\r\n");
+                if (a.GetHours2() > 0)
                 {
-                    return;
+                    Text_Section_Score.AppendText(a.GetHours2().ToString("00") + ":");
                 }
-                a.list.Add(a.Input);
-            }
-            /*if (list.Count % 2 == 0)
-            {
-                return;
-            }*/
-            store.Text = "";
-            foreach (string a in a.list)
-            {
-                store.AppendText(a);
-            }
-            store.AppendText(" = ");
-            if (a.isbinary == true)
-            {
-                List<int> iBase10 = new List<int>();
-                for(int i = 0; i < a.list.Count; i++)
+                Text_Section_Score.AppendText(a.GetMinutes2().ToString("00") + ":" + a.GetSeconds2().ToString("00") + "."
+                    + a.GetMiliseconds2().ToString("00") + "\r\n");
+                if (a.GetHours() > 0)
                 {
-                    if (a.list[i] != " + " && a.list[i] != " - " && a.list[i] != " X " && a.list[i] != " ÷ " && a.list[i] != "(" && a.list[i] != ")") 
-                    {
-                        iBase10.Add(Convert.ToInt32(a.list[i], 2));
-                    }
+                    Text_Time.AppendText(Lab_hour.Text + ":");
                 }
-                for (int i = 0; i < a.list.Count; i++)
-                {
-                    if(a.list[i] != " + " && a.list[i] != " - " && a.list[i] != " X " && a.list[i] != " ÷ " && a.list[i] != "(" && a.list[i] != ")")
-                    {
-                        a.list[i] = Convert.ToString(iBase10[0]);
-                        iBase10.RemoveAt(0);
-                    }
-                }
+                a.Section_Click();
+                Text_Time.AppendText(Lab_minute.Text + ":" + Lab_sec.Text + "." + Lab_milisec.Text + "\r\n");
             }
-            if (a.ishexadecimal == true)
-            {
-                List<int> iBase10 = new List<int>();
-                for (int i = 0; i < a.list.Count; i++)
-                {
-                    if (a.list[i] != " + " && a.list[i] != " - " && a.list[i] != " X " && a.list[i] != " ÷ " && a.list[i] != "(" && a.list[i] != ")")
-                    {
-                        iBase10.Add(Convert.ToInt32(a.list[i], 16));
-                    }
-                }
-                for (int i = 0; i < a.list.Count; i++)
-                {
-                    if (a.list[i] != " + " && a.list[i] != " - " && a.list[i] != " X " && a.list[i] != " ÷ " && a.list[i] != "(" && a.list[i] != ")")
-                    {
-                        a.list[i] = Convert.ToString(iBase10[0]);
-                        iBase10.RemoveAt(0);
-                    }
-                }
-            }
-            a.Convert_to_postfix();
-            /*Output.Text = "";
-            foreach(string a in listExp)
-            {
-                Output.AppendText(a);
-            }*/
-            a.calculate();
-            a.Input = "";
-            if (a.isbinary == true)
-            {
-                Output.Text = Convert.ToString(Convert.ToInt32(a.savedNum), 2);
-            }
-            if (a.ishexadecimal == true)
-            {
-                Output.Text = Convert.ToString(Convert.ToInt32(a.savedNum), 16);
-            }
-            if (a.isdecimal == true)
-            {
-                Output.Text = Convert.ToString(a.savedNum);
-            }
-            a.recentNum = a.savedNum;
-            a.isresult = true;
-            a.list.Clear();
-            a.Iscalc = false;
-            a.pointNum = 0;
-            a.Paren_O = 0;
-            a.Paren_C = 0;
-        }
-        private void BTN_Point_Click(object sender, EventArgs e)
-        {
-            if (a.pointNum == 0)
-            {
-                if (a.Input == "" || a.isresult == true)
-                {
-                    a.Input = "0";
-                    a.isresult = false;
-                }
-                a.Input = a.Input + ".";
-                Output.Text = a.Input;
-                a.pointNum++;
-            }
-            else { return; }
-        }
-        private void BTN_Clear_Click(object sender, EventArgs e)
-        {
-            a.Clear();
-            store.Text = "";
-            Output.Text = "0";
-        }
-        private void BTN_Remove_Click(object sender, EventArgs e)
-        {
-            if (a.Ispercent == true)
-            {
-                return;
-            }
-            if (a.sqr_ > 0)
-            {
-                return;
-            }
-            if (a.Input.Length == 0)
-            {
-                return;
-            }
-            else
-            {
-                if (a.Input.Length == 1)
-                {
-                    a.Input = "";
-                }
-                else
-                {
-                    a.Input = a.Input.Remove(a.Input.Length - 1);
-                }
-            }
-            if (a.Input == "")
-            {
-                a.recentNum = 0;
-            }
-            else
-            {
-                a.recentNum = Convert.ToDouble(a.Input);
-            }
-            if (a.Input == "")
-            {
-                Output.Text = "0";
-            }
-            else
-            {
-                Output.Text = a.Input;
-            }
-        }
-        private void BTN_ClearRece_Click(object sender, EventArgs e)
-        {
-            if (a.isresult == true) { a.savedNum = 0; }
-            a.Input = "";
-            Output.Text = "0";
-            a.recentNum = 0;
-            a.pointNum = 0;
-            a.Ispercent = false;
-            a.sqr_ = 0;
-            a.isresult = false;
-        }
-        private void BTN_Square_Click(object sender, EventArgs e)
-        {
-            if (a.Input == "") { a.Input = "0"; }
-            a.recentNum = Math.Pow(a.recentNum, 2);
-            a.Input = Convert.ToString(a.recentNum);
-            //list.Add(Input);
-            Output.Text = a.Input;
-            store.Text = "";
-            foreach (string a in a.list)
-            {
-                store.AppendText(a);
-            }
-            a.sqr_++;
-        }
-        private void BTN_Root_Click(object sender, EventArgs e)
-        {
-            if (a.Input == "") { a.Input = "0"; }
-            a.recentNum = Math.Sqrt(a.recentNum);
-            a.Input = Convert.ToString(a.recentNum);
-            //list.Add(Input);
-            Output.Text = a.Input;
-            store.Text = "";
-            foreach (string a in a.list)
-            {
-                store.AppendText(a);
-            }
-            a.sqr_++;
-        }
-        private void BTN_Inverse_Click(object sender, EventArgs e)
-        {
-            if (a.Input == "") { a.Input = "0"; }
-            a.recentNum = 1 / a.recentNum;
-            a.Input = Convert.ToString(a.recentNum);
-            //list.Add(Input);
-            Output.Text = a.Input;
-            store.Text = "";
-            foreach (string a in a.list)
-            {
-                store.AppendText(a);
-            }
-            a.sqr_++;
-        }
-        private void BTN_Percent_Click(object sender, EventArgs e)
-        {
-            if (a.Iscalc == true)
-            {
-                return;
-            }
-            a.recentNum = (a.recentNum / 100);
-            a.Input = Convert.ToString(a.recentNum);
-            a.list.Add(a.Input);
-            a.Ispercent = true;
-            Output.Text = a.Input;
-            store.Text = "";
-            foreach (string a in a.list)
-            {
-                store.AppendText(a);
-            }
-        }
-        private void BTN_Parenthesis_Open_Click(object sender, EventArgs e)
-        {
-            if (a.Iscalc == false && a.list.Count != 0)
-            {
-                return;
-            }
-            if (a.isresult == true)
-            {
-                a.Clear();
-                store.Text = "";
-                Output.Text = "0";
-            }
-            a.list.Add("(");
-            a.Paren_O++;
-            a.Input = "";
-            store.Text = "";
-            foreach (string a in a.list)
-            {
-                store.AppendText(a);
-            }
-            Output.Text = Convert.ToString(a.savedNum);
-        }
-        private void BTN_Parenthesis_Close_Click(object sender, EventArgs e)
-        {
-            if (a.Iscalc == true || a.Paren_C >= a.Paren_O)
-            {
-                return;
-            }
-            if (a.isresult == true)
-            {
-                a.Clear();
-                store.Text = "";
-                Output.Text = "0";
-            }
-            a.list.Add(a.Input);
-            a.list.Add(")");
-            a.Paren_C++;
-            a.isParen_C = true;
-            a.Input = "";
-            store.Text = "";
-            foreach (string a in a.list)
-            {
-                store.AppendText(a);
-            }
-            Output.Text = Convert.ToString(a.savedNum);
-        }
-        private void BTN_Binary_Click(object sender, EventArgs e)
-        {
-            if (a.savedNum != (int)a.savedNum || a.recentNum !=(int)a.recentNum)
-            {
-                MessageBox.Show("소수값은 변환할 수 없습니다.");
-                return;
-            }
-            if (a.isdecimal == true)
-            {
-                if (Output.Text != "0")
-                {
-                    a.Input = Convert.ToString(Convert.ToInt32(Output.Text), 2);
-                    Output.Text = a.Input;
-                    store.Text = "";
-                }
-            }
-            if (a.ishexadecimal == true)
-            {
-                if (Output.Text != "0")
-                {
-                    a.Input = Convert.ToString(Convert.ToInt32(Output.Text, 16), 2);
-                    Output.Text = a.Input;
-                    store.Text = "";
-                }
-            }
-            a.isdecimal = false;
-            a.isbinary = true;
-            a.ishexadecimal = false;
-            BTN_2.Enabled = false;
-            BTN_3.Enabled = false;
-            BTN_4.Enabled = false;
-            BTN_5.Enabled = false;
-            BTN_6.Enabled = false;
-            BTN_7.Enabled = false;
-            BTN_8.Enabled = false;
-            BTN_9.Enabled = false;
-            BTN_A.Enabled = false;
-            BTN_B.Enabled = false;
-            BTN_C.Enabled = false;
-            BTN_D.Enabled = false;
-            BTN_E.Enabled = false;
-            BTN_F.Enabled = false;
-            BTN_Point.Enabled = false;
-            BTN_Percent.Enabled = false;
-            BTN_Inverse.Enabled = false;
-            BTN_Root.Enabled = false;
-            BTN_Square.Enabled = false;
-            BTN_Decimal.Enabled = true;
-            BTN_Binary.Enabled = false;
-            BTN_Hexadecimal.Enabled = true;
-        }
-        private void BTN_Hexadecimal_Click(object sender, EventArgs e)
-        {
-            if (a.savedNum != (int)a.savedNum || a.recentNum != (int)a.recentNum)
-            {
-                MessageBox.Show("소수값은 변환할 수 없습니다.");
-                return;
-            }
-            if (a.isdecimal == true)
-            {
-                if (Output.Text != "0")
-                {
-                    a.Input = string.Format("{0:X}", (Convert.ToInt32(Output.Text)));
-                    Output.Text = a.Input;
-                    store.Text = "";
-                }
-            }
-            if (a.isbinary == true)
-            {
-                if (Output.Text != "0")
-                {
-                    a.Input = string.Format("{0:X}",(Convert.ToInt32(Output.Text,2)));
-                    Output.Text = a.Input;
-                    store.Text = "";
-                }
-            }
-            a.isdecimal = false;
-            a.isbinary = false;
-            a.ishexadecimal = true;
-            BTN_2.Enabled = true;
-            BTN_3.Enabled = true;
-            BTN_4.Enabled = true;
-            BTN_5.Enabled = true;
-            BTN_6.Enabled = true;
-            BTN_7.Enabled = true;
-            BTN_8.Enabled = true;
-            BTN_9.Enabled = true;
-            BTN_A.Enabled = true;
-            BTN_B.Enabled = true;
-            BTN_C.Enabled = true;
-            BTN_D.Enabled = true;
-            BTN_E.Enabled = true;
-            BTN_F.Enabled = true;
-            BTN_Point.Enabled = false;
-            BTN_Percent.Enabled = false;
-            BTN_Inverse.Enabled = false;
-            BTN_Root.Enabled = false;
-            BTN_Square.Enabled = false;
-            BTN_Decimal.Enabled = true;
-            BTN_Binary.Enabled = true;
-            BTN_Hexadecimal.Enabled = false;
-        }
-        private void BTN_Decimal_Click(object sender, EventArgs e)
-        {
-            if(a.isbinary == true)
-            {
-                if (Output.Text != "0")
-                {
-                    a.Input = Convert.ToString(Convert.ToInt32(Output.Text,2));
-                    Output.Text = a.Input;
-                    store.Text = "";
-                }
-            }
-            if (a.ishexadecimal == true)
-            {
-                if (Output.Text != "0")
-                {
-                    a.Input = Convert.ToString(Convert.ToInt32(Output.Text, 16));
-                    Output.Text = a.Input;
-                    store.Text = "";
-                }
-            }
-            a.isdecimal = true;
-            a.isbinary = false;
-            a.ishexadecimal = false;
-            BTN_2.Enabled = true;
-            BTN_3.Enabled = true;
-            BTN_4.Enabled = true;
-            BTN_5.Enabled = true;
-            BTN_6.Enabled = true;
-            BTN_7.Enabled = true;
-            BTN_8.Enabled = true;
-            BTN_9.Enabled = true;
-            BTN_A.Enabled = false;
-            BTN_B.Enabled = false;
-            BTN_C.Enabled = false;
-            BTN_D.Enabled = false;
-            BTN_E.Enabled = false;
-            BTN_F.Enabled = false;
-            BTN_Point.Enabled = true;
-            BTN_Percent.Enabled = true;
-            BTN_Inverse.Enabled = true;
-            BTN_Root.Enabled = true;
-            BTN_Square.Enabled = true;
-            BTN_Decimal.Enabled = false;
-            BTN_Binary.Enabled = true;
-            BTN_Hexadecimal.Enabled = true;
         }
     }
-    /*public class Calculator
+    /*public class StopWatch
     {
-        public List<string> list = new List<string>();
-        public List<string> listExp = new List<string>();
-        public Stack<string> stack = new Stack<string>();
-        public string Input = "";
-        public int pointNum = 0;
-        public double savedNum = 0;
-        public double recentNum = 0;
-        public int count = 0;
-        public bool Iscalc = false;
-        public bool Ispercent = false;
-        public int sqr_ = 0;
-        public bool isresult = false;
-        public int Paren_O = 0;
-        public int Paren_C = 0;
-        public bool isdecimal = true;
-        public bool isbinary = false;
-        public bool ishexadecimal = false;
-        public bool isParen_C = false;
-
-        public void Plus()
+        public int hours = 0;
+        public int minutes = 0;
+        public int seconds = 0;
+        public int miliseconds = 0;
+        public int hours2 = 0;
+        public int minutes2 = 0;
+        public int seconds2 = 0;
+        public int miliseconds2 = 0;
+        public int Record_Count = 0;
+        public bool isStop = true;
+        
+        public void IncreaseMilisec()
         {
-            /*if (list.Count % 2 == 0)
+            if (miliseconds > 99)
             {
-                list.Add(Input);
-                list.Add(" + ");
+                miliseconds = 0;
+                IncreaseSec();
             }
             else
             {
-                list.Add(" + ");
+                miliseconds++;
             }
-            list.Add(Input);
-            list.Add(" + ");
-            Input = "";
         }
-        public void Minus()
+        public void IncreaseSec()
         {
-            list.Add(Input);
-            list.Add(" - ");
-            Input = "";
-        }
-        public void Multi()
-        {
-            list.Add(Input);
-            list.Add(" X ");
-            Input = "";
-        }
-        public void Div()
-        {
-            list.Add(Input);
-            list.Add(" ÷ ");
-            Input = "";
-        }
-        public int Get_weight(string oper)
-        {
-            if (oper == " X " || oper == " ÷ ")
-                return 3;
-            else if (oper == " + " || oper == " - ")
-                return 2;
-            else if (oper == "(")
-                return 1;
+            if (seconds > 59)
+            {
+                seconds = 0;
+                IncreaseMinute();
+            }
             else
-                return -1;
-        }
-        public void Convert_to_postfix()
-        {
-            for (int i = 0; i < list.Count; i++)
             {
-                if (list[i] == " + " || list[i] == " - " || list[i] == " X " || list[i] == " ÷ " || list[i] == "(" || list[i] == ")")
-                {
-                    if (stack.Count == 0 || list[i] == "(")
-                    {
-                        stack.Push(list[i]);
-                    }
-                    else if (list[i] == ")")
-                    {
-                        String op = stack.Pop();
-                        while (op != "(")
-                        {
-                            listExp.Add(op);
-                            op = stack.Pop();
-                        }
-                    }
-                    else
-                    {
-                        if (Get_weight(list[i]) > Get_weight(stack.Peek()))
-                        {
-                            stack.Push(list[i]);
-                        }
-                        else
-                        {
-                            for (int j = 0; j < stack.Count; j++)
-                            {
-                                if (Get_weight(list[i]) <= Get_weight(stack.Peek()))
-                                {
-                                    listExp.Add(stack.Pop());
-                                    j--;
-                                }
-                                else
-                                {
-                                    stack.Push(list[i]);
-                                    break;
-                                }
-                            }
-                            if (stack.Count == 0)
-                            {
-                                stack.Push(list[i]);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    listExp.Add(list[i]);
-                }
+                seconds++;
             }
-            while (stack.Count > 0)
-                listExp.Add(stack.Pop());
         }
-        public double clac(double num1, double num2, string oper)
+        public void IncreaseMinute()
         {
-            switch (oper)
+            if (minutes > 59)
             {
-                case " + ":
-                    return num1 + num2;
-                case " - ":
-                    return num1 - num2;
-                case " X ":
-                    return num1 * num2;
-                case " ÷ ":
-                    return num1 / num2;
+                minutes = 0;
+                IncreaseHour();
             }
-            return 0;
-        }
-        public void calculate()
-        {
-            Stack<double> stack_ = new Stack<double>();
-            foreach (string a in listExp)
+            else
             {
-                if (a == " + " || a == " - " || a == " X " || a == " ÷ ")
-                {
-                    double Num2;
-                    Num2 = stack_.Pop();
-                    double Num1;
-                    Num1 = stack_.Pop();
-                    stack_.Push(clac(Num1, Num2, a));
-                }
-                else if (a == "") { }
-                else
-                {
-                    stack_.Push(Convert.ToDouble(a));
-                }
+                minutes++;
             }
-            savedNum = stack_.Pop();
         }
-        public void Clear()
+        public void IncreaseHour()
         {
-            Input = "";
-            count = 0;
-            list.Clear();
-            pointNum = 0;
-            savedNum = 0;
-            recentNum = 0;
-            Input = "";
-            Iscalc = true;
-            Ispercent = false;
-            isresult = false;
-            isParen_C = false;
-            sqr_ = 0;
-            Paren_O = 0;
-            Paren_C = 0;
+            hours++;
+        }
+        public void IncreaseMilisec2()
+        {
+            if (miliseconds > 99)
+            {
+                miliseconds2 = 0;
+                IncreaseSec2();
+            }
+            else
+            {
+                miliseconds2++;
+            }
+        }
+        public void IncreaseSec2()
+        {
+            if (seconds2 > 59)
+            {
+                seconds2 = 0;
+                IncreaseMinute2();
+            }
+            else
+            {
+                seconds2++;
+            }
+        }
+        public void IncreaseMinute2()
+        {
+            if (minutes2 > 59)
+            {
+                minutes2 = 0;
+                IncreaseHour2();
+            }
+            else
+            {
+                minutes2++;
+            }
+        }
+        public void IncreaseHour2()
+        {
+            hours2++;
+        }
+        public void Start_Click()
+        {
+            isStop = false;
+        }
+        public void Stop_Click()
+        {
+            isStop = true;
+        }
+        public void Reset_Click()
+        {
+            hours = 0;
+            minutes = 0;
+            seconds = 0;
+            miliseconds = 0;
+            hours2 = 0;
+            minutes2 = 0;
+            seconds2 = 0;
+            miliseconds2 = 0;
+            Record_Count = 0;
+            isStop = false;
+        }
+        public void Section_Click()
+        {
+            hours2 = 0;
+            minutes2 = 0;
+            seconds2 = 0;
+            miliseconds2 = 0;
+        }
+        public int RecordCount()
+        {
+            Record_Count++;
+            return Record_Count;
+        }
+        public int GetHours()
+        {
+            return hours;
+        }
+        public int GetHours2()
+        {
+            return hours2;
+        }
+        public int GetMinutes()
+        {
+            return minutes;
+        }
+        public int GetMinutes2()
+        {
+            return minutes2;
+        }
+        public int GetSeconds()
+        {
+            return seconds;
+        }
+        public int GetSeconds2()
+        {
+            return seconds2;
+        }
+        public int GetMiliseconds()
+        {
+            return miliseconds;
+        }
+        public int GetMiliseconds2()
+        {
+            return miliseconds2;
         }
     }*/
 }
