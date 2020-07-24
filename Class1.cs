@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StopWatch_Thread__Class
+namespace StopWatch_Timer__Class
 {
-    public class StopWatch
+    public class StopWatch2
     {
         public int hours = 0;
         public int minutes = 0;
@@ -17,7 +17,6 @@ namespace StopWatch_Thread__Class
         public int seconds2 = 0;
         public int miliseconds2 = 0;
         public int Record_Count = 0;
-        public bool isStop = true;
 
         public void IncreaseMilisec()
         {
@@ -99,14 +98,6 @@ namespace StopWatch_Thread__Class
         {
             hours2++;
         }
-        public void Start_Click()
-        {
-            isStop = false;
-        }
-        public void Stop_Click()
-        {
-            isStop = true;
-        }
         public void Reset_Click()
         {
             hours = 0;
@@ -118,19 +109,22 @@ namespace StopWatch_Thread__Class
             seconds2 = 0;
             miliseconds2 = 0;
             Record_Count = 0;
-            isStop = false;
         }
-        public void Section_Click()
+
+        public void Record_Click()
         {
             hours2 = 0;
             minutes2 = 0;
             seconds2 = 0;
             miliseconds2 = 0;
         }
-        public int RecordCount()
+        public int GetRecordCount()
+        {
+            return Record_Count;
+        }
+        public void IncreaseRecordCount()
         {
             Record_Count++;
-            return Record_Count;
         }
         public int GetHours()
         {
